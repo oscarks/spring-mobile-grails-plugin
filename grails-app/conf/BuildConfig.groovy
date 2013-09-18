@@ -29,4 +29,10 @@ grails.project.dependency.resolution = {
 		compile 'org.springframework.mobile:spring-mobile-device:1.0.0.M3'
 		runtime 'net.sourceforge.wurfl:wurfl:1.2'		
     }
+	
+	plugins {
+		runtime ":hibernate:$grailsVersion"
+		build ":tomcat:$grailsVersion"
+		compile ':cache:1.0.0'
+	}
 }

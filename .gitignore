@@ -3,3 +3,5 @@ target-eclipse
 bin
 .classpath
 .settings
+grails-spring-mobile-*.zip
+grails-spring-mobile-*.zip.*
