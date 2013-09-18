@@ -9,7 +9,7 @@ import org.springframework.mobile.device.wurfl.WurflManagerFactoryBean
 
 class SpringMobileGrailsPlugin {
 	// the plugin version
-	def version = "0.4"
+	def version = "0.4.1"
 	// the version or versions of Grails the plugin is designed for
 	def grailsVersion = "1.3.6 > *"
 	
@@ -34,36 +34,30 @@ Device resolver based on the Spring Mobile Library
 	def doWithWebDescriptor = { xml ->
 		// TODO Implement additions to web.xml (optional), this event occurs before
 	}
-	def watchedResources = ["file:./grails-app/controllers/*Controller.groovy"]
+	def watchedResources = ["file:./grails-app/controllers/*Controller.groovy","file:./grails-app/taglib/*TagLib.groovy"]
 	def doWithSpring = {
-		
-		
 		if(config.springMobile?.deviceResolver=='wurfl'){
 			wurflManager(WurflManagerFactoryBean, '/WEB-INF/wurfl/wurfl-2.0.25.zip') { patchLocations = '/WEB-INF/wurfl/web_browsers_patch.xml' }
 			deviceResolver(WurflDeviceResolver, ref('wurflManager'))
 			deviceResolverHandlerInterceptor(DeviceResolverHandlerInterceptor, ref('deviceResolver'))
-			
-				
-			
 		}
 		else{
 			deviceResolver(LiteDeviceResolver)
 			deviceResolverHandlerInterceptor(org.springframework.mobile.device.DeviceResolverHandlerInterceptor, ref('deviceResolver'))
 			
 		}
-	
-		
-		
 	}
 	
 	def doWithDynamicMethods = { ctx ->
-		def application = ApplicationHolder.application
-
-		application.getArtefacts("Controller").each { klass -> addDynamicMethods(klass) }
+		for (controllerClass in application.controllerClasses) {
+			addDynamicMethods(controllerClass) 
+		}
+		for (tagLibClass in application.tagLibClasses) {
+			addDynamicMethods(tagLibClass) 
+		}
 	}
 
 	private addDynamicMethods(klass) {
-
 		klass.metaClass.withMobileDevice = { Closure closure ->
 			def device = request.getAttribute("currentDevice")
 			if(device.isMobile()){
