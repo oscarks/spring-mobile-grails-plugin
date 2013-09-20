@@ -9,7 +9,7 @@ import org.springframework.mobile.device.wurfl.WurflManagerFactoryBean
 
 class SpringMobileGrailsPlugin {
 	// the plugin version
-	def version = "0.4.1"
+	def version = "0.4.2"
 	// the version or versions of Grails the plugin is designed for
 	def grailsVersion = "1.3.6 > *"
 	
@@ -22,7 +22,7 @@ class SpringMobileGrailsPlugin {
 	def author = "Sebastien Blanc"
 	def authorEmail = "scm.blanc@gmail.com"
 	def title = "Spring Mobile Grails plugin"
-	def description = '''\\
+	def description = '''
 Device resolver based on the Spring Mobile Library
 '''
 
@@ -35,6 +35,7 @@ Device resolver based on the Spring Mobile Library
 		// TODO Implement additions to web.xml (optional), this event occurs before
 	}
 	def watchedResources = ["file:./grails-app/controllers/*Controller.groovy","file:./grails-app/taglib/*TagLib.groovy"]
+	def observe = ["controller","tagLib"]
 	def doWithSpring = {
 		if(config.springMobile?.deviceResolver=='wurfl'){
 			wurflManager(WurflManagerFactoryBean, '/WEB-INF/wurfl/wurfl-2.0.25.zip') { patchLocations = '/WEB-INF/wurfl/web_browsers_patch.xml' }
@@ -58,11 +59,17 @@ Device resolver based on the Spring Mobile Library
 	}
 
 	private addDynamicMethods(klass) {
+		println "Adding mobile detection to $klass"
 		klass.metaClass.withMobileDevice = { Closure closure ->
 			def device = request.getAttribute("currentDevice")
 			if(device.isMobile()){
 				closure.call(device)
 			}
+		}
+		
+		klass.metaClass.isMobileDevice = {->
+			def device = request.getAttribute("currentDevice")
+			device.isMobile()
 		}
 	}
 
@@ -72,7 +79,9 @@ Device resolver based on the Spring Mobile Library
 
 	def onChange = { event ->
 		def application = event.application
-		application.getArtefacts("Controller").each { klass -> addDynamicMethods(klass) }	}
+		application.getArtefacts("Controller").each { klass -> addDynamicMethods(klass) }	
+		application.getArtefacts("TagLib").each { klass -> addDynamicMethods(klass) }	
+	}
 
 	def onConfigChange = { event ->
 		// TODO Implement code that is executed when the project configuration changes.
