@@ -84,5 +84,5 @@ class GrailsAdaptTagLib {
 		}
 	}
 
-	
+}
 
